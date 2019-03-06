@@ -1,0 +1,232 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.silbury.publicare</groupId>
+  <artifactId>publicare-silbury</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>publicare-silbury</name>
+  <description>publicare-silbury</description>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <serenity.version>2.0.40</serenity.version> 
+    <serenity.maven.version>2.0.27</serenity.maven.version>
+    <serenity.jbehave.version>1.44.0</serenity.jbehave.version>
+  	<acceptanceSourceDirectory>${basedir}/src/test</acceptanceSourceDirectory>
+    <acceptanceOutputDirectory>${basedir}/target/acceptance/test-classes</acceptanceOutputDirectory>
+  </properties>
+  
+  <dependencies>
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-core</artifactId>
+            <version>${serenity.version}</version>
+            <scope>test</scope>
+        </dependency>
+    
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-jbehave</artifactId>
+            <version>${serenity.jbehave.version}</version>
+            <scope>test</scope>
+        </dependency>
+         
+      	<dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.7</version>
+        </dependency>
+        
+        <dependency>
+	    	<groupId>io.github.bonigarcia</groupId>
+	    	<artifactId>webdrivermanager</artifactId>
+	    	<version>3.0.0</version>
+	    	<scope>test</scope>
+		</dependency>
+
+  </dependencies>
+    
+  <build>
+        <plugins>
+        <!-- 
+        
+        This plugin generates XML reports in the directory target/surefire-reports.
+        This plugin has only one goal, test. 
+        This goal is bound to the test phase of the default build lifecycle, and the command mvn test will execute it.
+        
+        By default, surefire automatically includes all test classes whose name starts with Test, or ends with Test, Tests or TestCase.
+
+		We can change this configuration using the excludes and includes parameters, however
+        -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M3</version>
+		        <configuration>
+		          <includes>
+                       <include>${acceptanceSourceDirectory}/java/**/*Test.java</include>
+                    </includes>  
+		        </configuration>                
+            </plugin>
+            <!-- it will zip the final JAR file from the projects target directory -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>create-directory</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo message="Creating Directory ${acceptanceOutputDirectory}"/>
+                                <mkdir dir="${acceptanceOutputDirectory}"/>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+          
+           <plugin>
+             <groupId>org.codehaus.mojo</groupId>
+             <artifactId>build-helper-maven-plugin</artifactId>
+             <version>1.9.1</version>
+             <executions>
+                 <execution>
+                     <id>add-test-sources</id>
+                     <phase>pre-integration-test</phase>
+                     <goals>
+                         <goal>add-test-source</goal>
+                     </goals>
+                     <configuration>
+                         <sources>
+                             <source>${acceptanceSourceDirectory}/java</source>
+                         </sources>
+                     </configuration>
+                 </execution>
+                 <execution>
+                     <id>add-test-resources</id>
+                     <phase>pre-integration-test</phase>
+                     <goals>
+                         <goal>add-test-resource</goal>
+                     </goals>
+                     <configuration>
+                         <resources>
+                             <resource>
+                                 <directory>${acceptanceSourceDirectory}/java</directory>
+                                 <targetPath>${acceptanceOutputDirectory}</targetPath>
+                             </resource>
+                         </resources>
+                     </configuration>
+                 </execution>
+                 <execution>
+                     <id>add-empty-directory</id>
+                     <phase>pre-integration-test</phase>
+                     <goals>
+                         <goal>add-test-resource</goal>
+                     </goals>
+                     <configuration>
+                         <resources>
+                             <resource>
+                                 <directory>${acceptanceSourceDirectory}/java</directory>
+                                 <targetPath>${acceptanceOutputDirectory}</targetPath>
+                                 <excludes>
+                                     <exclude>**/*</exclude>
+                                 </excludes>
+                             </resource>
+                         </resources>
+                     </configuration>
+                 </execution>
+             </executions>
+         </plugin>
+         
+         <!-- 
+         	The failsafe plugin is used for integration tests of a project. 
+         	It has two goals:
+
+			integration-test – run integration tests; this goal is bound to the integration-test phase by default
+			verify – verify that the integration tests passed; this goal is bound to the verify phase by default
+          -->
+         <plugin>
+             <artifactId>maven-failsafe-plugin</artifactId>
+             <version>2.8</version>
+             <configuration>
+                 <testClassesDirectory>${acceptanceOutputDirectory}</testClassesDirectory>
+                 <reportsDirectory>${acceptanceOutputDirectory}/failsafe-reports</reportsDirectory>
+                 <test>**/*.java</test>
+                 <additionalClasspathElements>
+                     <additionalClasspathElement>${acceptanceSourceDirectory}/resources</additionalClasspathElement>
+                 </additionalClasspathElements>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>integration-test</goal>
+                         <goal>verify</goal>
+                     </goals>
+                 </execution>
+             </executions>
+         </plugin>
+         
+        <!-- 
+        	 The compiler plugin is used to compile the source code of a Maven project.
+        	 This plugin has two goals, which are already bound to specific phases of the default lifecycle:
+			 
+			 compile – compile main source files
+			 testCompile – compile test source files
+		 -->         
+ 		<plugin>
+	   		<groupId>org.apache.maven.plugins</groupId>
+	   		<artifactId>maven-compiler-plugin</artifactId>
+	   		<version>3.8.0</version>
+	   		<configuration>
+	     			<source>1.8</source>
+	     			<target>1.8</target>
+	     			<!-- the following configuration for the compiler to warn about unchecked operations -->
+	     			<compilerArgs>
+				        <arg>-Xlint:unchecked</arg>
+				    </compilerArgs>
+	   		</configuration>
+	   		<executions>
+	               <execution>
+	                   <phase>pre-integration-test</phase>
+	                   <goals>
+	                       <goal>testCompile</goal>
+	                   </goals>
+	                   <configuration>
+	                       <compilerArguments>
+	                           <d>${acceptanceOutputDirectory}</d>
+	                       </compilerArguments>
+	                   </configuration>
+	               </execution>
+	           </executions>
+ 		</plugin> 
+ 		
+       	<plugin>
+               <groupId>net.serenity-bdd.maven.plugins</groupId>
+               <artifactId>serenity-maven-plugin</artifactId>
+               <version>${serenity.maven.version}</version>
+               <executions>
+                   <execution>
+                       <id>serenity-reports</id>
+                       <phase>post-integration-test</phase>
+                       <goals>
+                           <goal>aggregate</goal>
+                       </goals>
+                   </execution>
+               </executions>
+                <dependencies>
+                   <dependency>
+                       <groupId>net.serenity-bdd</groupId>
+                       <artifactId>serenity-core</artifactId>
+                       <version>${serenity.version}</version>
+                   </dependency>
+                 </dependencies> 
+           </plugin>
+           
+        </plugins>
+    </build>
+</project>
