@@ -6,17 +6,21 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.silbury.publicare.common.Constants;
+
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 
 public class DriverFactory {
-
+    private static final Logger logger = LoggerFactory.getLogger(DriverFactory.class);
     private static WebDriver driver = null;
     private static Constants.DriverName driverName;
-
+    static String driverPath = Constants.RESOURCES_ROOT + "drivers" + File.separator+"chrome"+File.separator + "chromedriver.exe" ;
+    
     public static WebDriver getDriverByName(String webDriverName, boolean headless)
     {
         driverName = Constants.DriverName.valueOf(webDriverName.toUpperCase());
@@ -56,14 +60,16 @@ public class DriverFactory {
 
 	private static void setChromeDriver(boolean headless)
     {
-    	//System.setProperty("webdriver.chrome.driver", driverPath);	
-		WebDriverManager.chromedriver().setup();
+   	    logger.info("driver path :: "+driverPath);
+   	    System.setProperty("webdriver.chrome.driver", driverPath);	
+   	    // uses bonigarcia set up 
+   	    //WebDriverManager.chromedriver().setup();
     	ChromeOptions caps =  new ChromeOptions();
     	caps.addArguments("window-size=1400,800");
     	if(headless)
     		caps.addArguments("headless");
      
-        // uses bonigarcia set up 
+        
 		driver = new ChromeDriver(caps);
 		driver.get(Constants.DefaultUrl.url);
     }    
