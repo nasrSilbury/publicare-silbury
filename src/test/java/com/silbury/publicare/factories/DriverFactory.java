@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +67,13 @@ public class DriverFactory {
    	    //WebDriverManager.chromedriver().setup();
     	ChromeOptions caps =  new ChromeOptions();
     	caps.addArguments("window-size=1400,800");
+    	caps.setBinary(driverPath);
     	if(headless)
     		caps.addArguments("headless");
+    	
+    	
+    	//DesiredCapabilities capabilities = new DesiredCapabilities();
+    	//capabilities.setCapability(ChromeOptions.CAPABILITY, caps);
      
         
 		driver = new ChromeDriver(caps);
